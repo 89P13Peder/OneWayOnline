@@ -131,3 +131,108 @@ void AOneWayGameCharacter::DoJumpEnd()
 	// signal the character to stop jumping
 	StopJumping();
 }
+
+// Agregar estas implementaciones:
+
+#include "Net/UnrealNetwork.h"
+
+void AOneWayGameCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
+	DOREPLIFETIME(AOneWayGameCharacter, bHasKey);
+}
+
+void AOneWayGameCharacter::OnRep_HasKey()
+{
+	// Aquí puedes agregar efectos visuales o de sonido cuando se obtiene la llave
+	// Por ejemplo, un efecto de partículas o un sonido
+}
+
+void AOneWayGameCharacter::SetHasKey(bool bNewHasKey)
+{
+	if (HasAuthority())
+	{
+		bHasKey = bNewHasKey;
+		OnRep_HasKey(); // Llamar manualmente para el servidor
+	}
+}
+
+#include "Blueprint/UserWidget.h"
+#include "Net/UnrealNetwork.h"
+
+// Agregar estas implementaciones:
+
+void AOneWayGameCharacter::ShowWinWidget_Implementation()
+{
+	if (WinWidgetClass)
+	{
+		HideAllWidgets();
+		CurrentWidget = CreateWidget<UUserWidget>(GetWorld(), WinWidgetClass);
+		if (CurrentWidget)
+		{
+			CurrentWidget->AddToViewport();
+			
+			// Opcional: Mostrar cursor y deshabilitar input del juego
+			if (APlayerController* PC = Cast<APlayerController>(GetController()))
+			{
+				PC->SetShowMouseCursor(true);
+				PC->SetInputMode(FInputModeUIOnly());
+			}
+		}
+	}
+}
+
+void AOneWayGameCharacter::ShowLoseWidget_Implementation()
+{
+	if (LoseWidgetClass)
+	{
+		HideAllWidgets();
+		CurrentWidget = CreateWidget<UUserWidget>(GetWorld(), LoseWidgetClass);
+		if (CurrentWidget)
+		{
+			CurrentWidget->AddToViewport();
+			
+			// Opcional: Mostrar cursor
+			if (APlayerController* PC = Cast<APlayerController>(GetController()))
+			{
+				PC->SetShowMouseCursor(true);
+				PC->SetInputMode(FInputModeUIOnly());
+			}
+		}
+	}
+}
+
+void AOneWayGameCharacter::ShowNeedKeyWidget_Implementation()
+{
+	if (NeedKeyWidgetClass)
+	{
+		// Para el widget de "necesitas llave", podrías querer que sea temporal
+		HideAllWidgets();
+		CurrentWidget = CreateWidget<UUserWidget>(GetWorld(), NeedKeyWidgetClass);
+		if (CurrentWidget)
+		{
+			CurrentWidget->AddToViewport();
+			
+			// Programar para que desaparezca después de 2 segundos
+			FTimerHandle TimerHandle;
+			GetWorldTimerManager().SetTimer(TimerHandle, this, &AOneWayGameCharacter::HideAllWidgets, 2.0f, false);
+		}
+	}
+}
+
+void AOneWayGameCharacter::HideAllWidgets_Implementation()
+{
+	if (CurrentWidget)
+	{
+		CurrentWidget->RemoveFromParent();
+		CurrentWidget = nullptr;
+		
+		// Restaurar input del juego
+		if (APlayerController* PC = Cast<APlayerController>(GetController()))
+		{
+			PC->SetShowMouseCursor(false);
+			PC->SetInputMode(FInputModeGameOnly());
+		}
+	}
+}

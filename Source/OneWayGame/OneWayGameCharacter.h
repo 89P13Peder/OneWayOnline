@@ -92,5 +92,55 @@ public:
 
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+protected:
+	// Propiedad replicada para saber si el jugador tiene la llave
+	UPROPERTY(ReplicatedUsing = OnRep_HasKey, BlueprintReadOnly, Category = "Player")
+	bool bHasKey;
+
+	// Función de replicación
+	UFUNCTION()
+	void OnRep_HasKey();
+
+public:
+	// Setter para la llave (solo en servidor)
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	void SetHasKey(bool bNewHasKey);
+
+	// Getter para la llave
+	UFUNCTION(BlueprintPure, Category = "Player")
+	bool GetHasKey() const { return bHasKey; }
+
+	// Replicación
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+public:
+	// Funciones para mostrar widgets (ejecutadas en todos los clientes)
+	UFUNCTION(Client, Reliable, BlueprintCallable, Category = "UI")
+	void ShowWinWidget();
+	
+	UFUNCTION(Client, Reliable, BlueprintCallable, Category = "UI")
+	void ShowLoseWidget();
+	
+	UFUNCTION(Client, Reliable, BlueprintCallable, Category = "UI")
+	void ShowNeedKeyWidget();
+	
+	UFUNCTION(Client, Reliable, BlueprintCallable, Category = "UI")
+	void HideAllWidgets();
+
+	// Widget classes para spawnear
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<class UUserWidget> WinWidgetClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<class UUserWidget> LoseWidgetClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<class UUserWidget> NeedKeyWidgetClass;
+
+private:
+	// Referencias a los widgets actuales
+	UPROPERTY()
+	UUserWidget* CurrentWidget;
 };
 
