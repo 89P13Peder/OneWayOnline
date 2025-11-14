@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Components/SphereComponent.h"
-#include "Net/UnrealNetwork.h"
 #include "KeyActor.generated.h"
 
 UCLASS()
@@ -21,12 +20,12 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	// Componente de malla
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated, Category = "Components")
+	// Componente de malla (NO REPLICAR explícitamente)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	class UStaticMeshComponent* KeyMesh;
 
-	// Componente de colisión
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated, Category = "Components")
+	// Componente de colisión (NO REPLICAR explícitamente)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	class USphereComponent* CollisionComponent;
 
 	// Propiedad replicada para saber si la llave fue recolectada

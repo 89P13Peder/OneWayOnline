@@ -142,5 +142,9 @@ private:
 	// Referencias a los widgets actuales
 	UPROPERTY()
 	UUserWidget* CurrentWidget;
+
+private:
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	APlayerController* GetPlayerController() const;
 };
 

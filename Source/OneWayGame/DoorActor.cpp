@@ -45,8 +45,6 @@ void ADoorActor::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Oth
 	}
 }
 
-// En la función InteractWithDoor, modificar esta parte:
-
 void ADoorActor::InteractWithDoor(AOneWayGameCharacter* InteractingPlayer)
 {
 	if (HasAuthority() && !bIsOpen && InteractingPlayer)
@@ -54,12 +52,15 @@ void ADoorActor::InteractWithDoor(AOneWayGameCharacter* InteractingPlayer)
 		if (InteractingPlayer->GetHasKey())
 		{
 			bIsOpen = true;
-			OnRep_IsOpen();
+			OnRep_IsOpen(); // Llamar manualmente en servidor
+			
+			UE_LOG(LogTemp, Warning, TEXT("Puerta abierta por jugador con llave"));
 		}
 		else
 		{
 			// Mostrar mensaje de que necesita la llave
 			InteractingPlayer->ShowNeedKeyWidget();
+			UE_LOG(LogTemp, Warning, TEXT("Jugador necesita llave para abrir puerta"));
 		}
 	}
 }
@@ -69,11 +70,17 @@ void ADoorActor::OnRep_IsOpen()
 	// Aquí implementas la animación/efecto de apertura de puerta
 	if (DoorMesh)
 	{
-		// Por ejemplo, rotar la puerta o hacerla invisible
 		if (bIsOpen)
 		{
 			DoorMesh->SetVisibility(false);
 			DoorMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			InteractionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		}
+		else
+		{
+			DoorMesh->SetVisibility(true);
+			DoorMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+			InteractionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 		}
 	}
 }
@@ -83,12 +90,10 @@ void ADoorActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifeti
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	
 	DOREPLIFETIME(ADoorActor, bIsOpen);
-	DOREPLIFETIME(ADoorActor, DoorMesh);
-	DOREPLIFETIME(ADoorActor, InteractionComponent);
+	// NO replicar DoorMesh e InteractionComponent - ya se replican automáticamente
 }
 
 void ADoorActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
-

@@ -11,6 +11,10 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "OneWayGame.h"
+#include "Net/UnrealNetwork.h"
+#include "Blueprint/UserWidget.h"
+#include "TimerManager.h"
+#include "Engine/World.h" 
 
 AOneWayGameCharacter::AOneWayGameCharacter()
 {
@@ -26,8 +30,7 @@ AOneWayGameCharacter::AOneWayGameCharacter()
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
 
-	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
-	// instead of recompiling to adjust them
+	
 	GetCharacterMovement()->JumpZVelocity = 500.f;
 	GetCharacterMovement()->AirControl = 0.35f;
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
@@ -46,8 +49,7 @@ AOneWayGameCharacter::AOneWayGameCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 
-	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
-	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+	
 }
 
 void AOneWayGameCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -132,107 +134,121 @@ void AOneWayGameCharacter::DoJumpEnd()
 	StopJumping();
 }
 
-// Agregar estas implementaciones:
-
-#include "Net/UnrealNetwork.h"
-
 void AOneWayGameCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	
-	DOREPLIFETIME(AOneWayGameCharacter, bHasKey);
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    
+    DOREPLIFETIME(AOneWayGameCharacter, bHasKey);
 }
 
 void AOneWayGameCharacter::OnRep_HasKey()
 {
-	// Aquí puedes agregar efectos visuales o de sonido cuando se obtiene la llave
-	// Por ejemplo, un efecto de partículas o un sonido
+    UE_LOG(LogTemp, Warning, TEXT("Player %s key status: %s"), *GetName(), bHasKey ? TEXT("Has Key") : TEXT("No Key"));
 }
 
 void AOneWayGameCharacter::SetHasKey(bool bNewHasKey)
 {
-	if (HasAuthority())
-	{
-		bHasKey = bNewHasKey;
-		OnRep_HasKey(); // Llamar manualmente para el servidor
-	}
+    if (HasAuthority())
+    {
+        bHasKey = bNewHasKey;
+        OnRep_HasKey();
+    }
 }
-
-#include "Blueprint/UserWidget.h"
-#include "Net/UnrealNetwork.h"
-
-// Agregar estas implementaciones:
 
 void AOneWayGameCharacter::ShowWinWidget_Implementation()
 {
-	if (WinWidgetClass)
+	UE_LOG(LogTemp, Warning, TEXT("ShowWinWidget_Implementation ejecutado"));
+    
+	if (!WinWidgetClass || !IsLocallyControlled()) 
+		return;
+    
+	APlayerController* PC = GetPlayerController();
+	if (!PC) 
+		return;
+    
+	// Versión mínima
+	HideAllWidgets();
+    
+	CurrentWidget = CreateWidget<UUserWidget>(PC, WinWidgetClass);
+	if (CurrentWidget)
 	{
-		HideAllWidgets();
-		CurrentWidget = CreateWidget<UUserWidget>(GetWorld(), WinWidgetClass);
-		if (CurrentWidget)
-		{
-			CurrentWidget->AddToViewport();
-			
-			// Opcional: Mostrar cursor y deshabilitar input del juego
-			if (APlayerController* PC = Cast<APlayerController>(GetController()))
-			{
-				PC->SetShowMouseCursor(true);
-				PC->SetInputMode(FInputModeUIOnly());
-			}
-		}
+		CurrentWidget->AddToViewport(999); // Z-Order muy alto
+        
+		// Solo el cursor por ahora
+		PC->SetShowMouseCursor(true);
+		PC->SetInputMode(FInputModeUIOnly());
+        
+		UE_LOG(LogTemp, Warning, TEXT(" Widget mostrado (versión mínima)"));
 	}
 }
 
 void AOneWayGameCharacter::ShowLoseWidget_Implementation()
 {
-	if (LoseWidgetClass)
-	{
-		HideAllWidgets();
-		CurrentWidget = CreateWidget<UUserWidget>(GetWorld(), LoseWidgetClass);
-		if (CurrentWidget)
-		{
-			CurrentWidget->AddToViewport();
-			
-			// Opcional: Mostrar cursor
-			if (APlayerController* PC = Cast<APlayerController>(GetController()))
-			{
-				PC->SetShowMouseCursor(true);
-				PC->SetInputMode(FInputModeUIOnly());
-			}
-		}
-	}
+    UE_LOG(LogTemp, Warning, TEXT("ShowLoseWidget called for %s"), *GetName());
+    
+    if (LoseWidgetClass && IsLocallyControlled())
+    {
+        HideAllWidgets();
+        UWorld* World = GetWorld();
+        if (World)
+        {
+            CurrentWidget = CreateWidget<UUserWidget>(GetPlayerController(), LoseWidgetClass);
+            if (CurrentWidget)
+            {
+                CurrentWidget->AddToViewport();
+                
+                if (APlayerController* PC = GetPlayerController())
+                {
+                    PC->SetShowMouseCursor(true);
+                    FInputModeUIOnly InputMode;
+                    InputMode.SetWidgetToFocus(CurrentWidget->TakeWidget());
+                    InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+                    PC->SetInputMode(InputMode);
+                }
+            }
+        }
+    }
 }
 
 void AOneWayGameCharacter::ShowNeedKeyWidget_Implementation()
 {
-	if (NeedKeyWidgetClass)
-	{
-		// Para el widget de "necesitas llave", podrías querer que sea temporal
-		HideAllWidgets();
-		CurrentWidget = CreateWidget<UUserWidget>(GetWorld(), NeedKeyWidgetClass);
-		if (CurrentWidget)
-		{
-			CurrentWidget->AddToViewport();
-			
-			// Programar para que desaparezca después de 2 segundos
-			FTimerHandle TimerHandle;
-			GetWorldTimerManager().SetTimer(TimerHandle, this, &AOneWayGameCharacter::HideAllWidgets, 2.0f, false);
-		}
-	}
+    UE_LOG(LogTemp, Warning, TEXT("ShowNeedKeyWidget called for %s"), *GetName());
+    
+    if (NeedKeyWidgetClass && IsLocallyControlled())
+    {
+        HideAllWidgets();
+        UWorld* World = GetWorld();
+        if (World)
+        {
+            CurrentWidget = CreateWidget<UUserWidget>(GetPlayerController(), NeedKeyWidgetClass);
+            if (CurrentWidget)
+            {
+                CurrentWidget->AddToViewport();
+                
+                FTimerHandle TimerHandle;
+                World->GetTimerManager().SetTimer(TimerHandle, this, &AOneWayGameCharacter::HideAllWidgets, 2.0f, false);
+            }
+        }
+    }
 }
 
 void AOneWayGameCharacter::HideAllWidgets_Implementation()
 {
-	if (CurrentWidget)
-	{
-		CurrentWidget->RemoveFromParent();
-		CurrentWidget = nullptr;
-		
-		// Restaurar input del juego
-		if (APlayerController* PC = Cast<APlayerController>(GetController()))
-		{
-			PC->SetShowMouseCursor(false);
-			PC->SetInputMode(FInputModeGameOnly());
-		}
-	}
+    if (CurrentWidget)
+    {
+        CurrentWidget->RemoveFromParent();
+        CurrentWidget = nullptr;
+        
+        if (APlayerController* PC = GetPlayerController())
+        {
+            PC->SetShowMouseCursor(false);
+            FInputModeGameOnly InputMode;
+            PC->SetInputMode(InputMode);
+        }
+    }
+}
+
+APlayerController* AOneWayGameCharacter::GetPlayerController() const
+{
+    return Cast<APlayerController>(GetController());
 }

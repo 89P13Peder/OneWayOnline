@@ -12,6 +12,22 @@
 UCLASS()
 class ONEWAYGAME_API AOneWayGameGameStateBase : public AGameStateBase
 {
-	GENERATED_BODY()
-	
+    GENERATED_BODY()
+
+public:
+    AOneWayGameGameStateBase();
+
+    UPROPERTY(ReplicatedUsing = OnRep_Winner)
+    APlayerState* Winner;
+
+    UFUNCTION()
+    void OnRep_Winner();
+
+    void SetWinner(APlayerState* NewWinner);
+
+    // NUEVA FUNCIÓN - usa un nombre diferente para el parámetro
+    UFUNCTION(BlueprintCallable, Category = "Game State")
+    void NotifyPlayerWin(class AOneWayGameCharacter* WinningPlayer); // Cambiado de 'Winner' a 'WinningPlayer'
+
+    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

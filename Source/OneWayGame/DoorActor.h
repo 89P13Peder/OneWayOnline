@@ -3,7 +3,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Components/BoxComponent.h"
-#include "Net/UnrealNetwork.h"
 #include "DoorActor.generated.h"
 
 UCLASS()
@@ -17,11 +16,11 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	// Componentes
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated, Category = "Components")
+	// Componentes (NO replicar explícitamente)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	class UStaticMeshComponent* DoorMesh;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated, Category = "Components")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	class UBoxComponent* InteractionComponent;
 
 	// Propiedad replicada para saber si la puerta está abierta
