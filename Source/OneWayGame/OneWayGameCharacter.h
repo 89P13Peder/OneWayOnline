@@ -98,6 +98,9 @@ protected:
 	UPROPERTY(ReplicatedUsing = OnRep_HasKey, BlueprintReadOnly, Category = "Player")
 	bool bHasKey;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UStaticMeshComponent* WeaponMesh;
+
 	// Función de replicación
 	UFUNCTION()
 	void OnRep_HasKey();

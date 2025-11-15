@@ -49,6 +49,10 @@ AOneWayGameCharacter::AOneWayGameCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 
+	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
+	WeaponMesh->SetupAttachment(GetMesh(), TEXT("WeaponSocket"));
+	WeaponMesh->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
+	WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	
 }
 
