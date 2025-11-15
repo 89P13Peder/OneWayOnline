@@ -58,6 +58,7 @@ protected:
 
 	/** Initialize input action bindings */
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void BeginPlay() override;
 
 protected:
 
@@ -106,6 +107,11 @@ protected:
 	void OnRep_HasKey();
 
 public:
+
+	/** Interact Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	UInputAction* InteractAction;
+	
 	// Setter para la llave (solo en servidor)
 	UFUNCTION(BlueprintCallable, Category = "Player")
 	void SetHasKey(bool bNewHasKey);
@@ -130,6 +136,12 @@ public:
 	
 	UFUNCTION(Client, Reliable, BlueprintCallable, Category = "UI")
 	void HideAllWidgets();
+
+	UFUNCTION()
+	void DoInteract();
+
+	UFUNCTION(BlueprintCallable, Category = "Interaction")
+	void CheckOverlappingItems();
 
 	// Widget classes para spawnear
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")

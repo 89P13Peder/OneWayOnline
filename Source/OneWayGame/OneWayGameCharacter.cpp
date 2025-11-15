@@ -10,11 +10,15 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "Item.h"
+#include "Items.h"
 #include "OneWayGame.h"
 #include "Net/UnrealNetwork.h"
 #include "Blueprint/UserWidget.h"
 #include "TimerManager.h"
-#include "Engine/World.h" 
+#include "Engine/World.h"
+#include "EnhancedInputSubsystems.h"
+#include "EnhancedInputComponent.h"
 
 AOneWayGameCharacter::AOneWayGameCharacter()
 {
@@ -71,11 +75,20 @@ void AOneWayGameCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AOneWayGameCharacter::Look);
+
+		// Interaction
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &AOneWayGameCharacter::DoInteract);
 	}
 	else
 	{
 		UE_LOG(LogOneWayGame, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
+}
+
+void AOneWayGameCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
 }
 
 void AOneWayGameCharacter::Move(const FInputActionValue& Value)
@@ -143,6 +156,36 @@ void AOneWayGameCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     
     DOREPLIFETIME(AOneWayGameCharacter, bHasKey);
+}
+
+void AOneWayGameCharacter::DoInteract()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Interact pressed!"));
+	// Aquí ejecutas tu lógica, por ejemplo PickUp
+}
+
+void AOneWayGameCharacter::CheckOverlappingItems()
+{
+	TArray<AActor*> OverlappingActors;
+
+	GetCapsuleComponent()->GetOverlappingActors(OverlappingActors);
+
+	for (AActor* Actor : OverlappingActors)
+	{
+		if (!Actor) continue;
+
+		// Filtro: ¿Es de la clase AItem?
+		if (Actor->IsA(AItem::StaticClass()))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Encontré un item overlapeando: %s"), *Actor->GetName());
+
+			// 🟢 OPCIONAL: si usa interfaz IItems → ejecutar función
+			if (Actor->GetClass()->ImplementsInterface(UItems::StaticClass()))
+			{
+				IItems::Execute_PickUp(Actor);
+			}
+		}
+	}
 }
 
 void AOneWayGameCharacter::OnRep_HasKey()

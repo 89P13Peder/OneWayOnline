@@ -4,7 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Components/BoxComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "Item.generated.h"
+
 
 UCLASS()
 class ONEWAYGAME_API AItem : public AActor
@@ -21,5 +24,14 @@ protected:
 
 public:
 	// Called every frame
-	//virtual void Tick(float DeltaTime) override;
+	virtual void Tick(float DeltaTime) override;
+
+protected:
+	/** Trigger box para detectar al jugador */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
+	UBoxComponent* Trigger;
+
+	/** Mesh del ítem editable desde el editor */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
+	UStaticMeshComponent* ItemMesh;
 };
