@@ -106,6 +106,18 @@ protected:
 	UFUNCTION()
 	void OnRep_HasKey();
 
+	UFUNCTION(Server, Reliable, BlueprintCallable)
+	void ServerDestroyActor(AActor* TargetActor);
+
+	UFUNCTION(BlueprintCallable, BlueprintCallable, Category="Interaction")
+	void DestroyItem(AActor* TargetActor);
+
+	UFUNCTION(Server, Reliable)
+	void ServerSetNewStaticMesh(UStaticMesh* NewMesh);
+
+	UFUNCTION(BlueprintCallable, Category="Interaction")
+	void SetNewStaticMesh(UStaticMesh* NewMesh);
+
 public:
 
 	/** Interact Input Action */

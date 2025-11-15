@@ -161,7 +161,6 @@ void AOneWayGameCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 void AOneWayGameCharacter::DoInteract()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Interact pressed!"));
-	// Aquí ejecutas tu lógica, por ejemplo PickUp
 }
 
 void AOneWayGameCharacter::CheckOverlappingItems()
@@ -191,6 +190,61 @@ void AOneWayGameCharacter::CheckOverlappingItems()
 void AOneWayGameCharacter::OnRep_HasKey()
 {
     UE_LOG(LogTemp, Warning, TEXT("Player %s key status: %s"), *GetName(), bHasKey ? TEXT("Has Key") : TEXT("No Key"));
+}
+
+void AOneWayGameCharacter::DestroyItem(AActor* TargetActor)
+{
+	if (!TargetActor) return;
+
+	if (HasAuthority())
+	{
+		// Estamos en servidor → destruir directamente
+		TargetActor->Destroy();
+	}
+	else
+	{
+		// Estamos en cliente → pedir al servidor que destruya
+		ServerDestroyActor(TargetActor);
+	}
+}
+
+void AOneWayGameCharacter::SetNewStaticMesh(UStaticMesh* NewMesh)
+{
+	if (!NewMesh) return;
+
+	if (HasAuthority())
+	{
+		// Estamos en servidor → aplicar directamente
+		WeaponMesh->SetStaticMesh(NewMesh);
+	}
+	else
+	{
+		// Cliente → pedir al servidor
+		ServerSetNewStaticMesh(NewMesh);
+	}
+}
+
+void AOneWayGameCharacter::ServerSetNewStaticMesh_Implementation(UStaticMesh* NewMesh)
+{
+	if (!NewMesh) return;
+
+	// Solo el servidor debe modificar el mesh
+	WeaponMesh->SetStaticMesh(NewMesh);
+
+	UE_LOG(LogTemp, Warning, TEXT("Servidor asignó un nuevo mesh: %s"), 
+		*NewMesh->GetName());
+}
+
+void AOneWayGameCharacter::ServerDestroyActor_Implementation(AActor* TargetActor)
+{
+	if (!TargetActor) return;
+
+	// Seguridad: solo el servidor puede destruir actores
+	if (HasAuthority())
+	{
+		TargetActor->Destroy();
+		UE_LOG(LogTemp, Warning, TEXT("Actor %s destruido por el servidor"), *TargetActor->GetName());
+	}
 }
 
 void AOneWayGameCharacter::SetHasKey(bool bNewHasKey)
