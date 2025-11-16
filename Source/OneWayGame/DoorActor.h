@@ -46,5 +46,8 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Door")
 	bool GetIsOpen() const { return bIsOpen; }
 
+	UFUNCTION(Server, Reliable)
+	void ServerWinCondition();
+
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

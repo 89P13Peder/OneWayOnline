@@ -163,6 +163,7 @@ void AOneWayGameCharacter::DoInteract()
 	UE_LOG(LogTemp, Warning, TEXT("Interact pressed!"));
 }
 
+
 void AOneWayGameCharacter::CheckOverlappingItems()
 {
 	TArray<AActor*> OverlappingActors;
@@ -190,6 +191,11 @@ void AOneWayGameCharacter::CheckOverlappingItems()
 void AOneWayGameCharacter::OnRep_HasKey()
 {
     UE_LOG(LogTemp, Warning, TEXT("Player %s key status: %s"), *GetName(), bHasKey ? TEXT("Has Key") : TEXT("No Key"));
+}
+
+void AOneWayGameCharacter::OnRep_HasWeapon()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Player %s key status: %s"), *GetName(), bHasWeapon ? TEXT("Has Weapon") : TEXT("No Weapon"));
 }
 
 void AOneWayGameCharacter::DestroyItem(AActor* TargetActor)
@@ -254,6 +260,15 @@ void AOneWayGameCharacter::SetHasKey(bool bNewHasKey)
         bHasKey = bNewHasKey;
         OnRep_HasKey();
     }
+}
+
+void AOneWayGameCharacter::SetHasWeapon(bool bNewHasWeapon)
+{
+	if (HasAuthority())
+	{
+		bHasWeapon = bNewHasWeapon;
+		OnRep_HasWeapon();
+	}
 }
 
 void AOneWayGameCharacter::ShowWinWidget_Implementation()

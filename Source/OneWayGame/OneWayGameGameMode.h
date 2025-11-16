@@ -19,6 +19,9 @@ public:
 	/** Constructor */
 	AOneWayGameGameMode();
 
+	UFUNCTION(BlueprintCallable, Category = "Game Rules")
+	void EvaluatePlayers();
+
 };
 
 

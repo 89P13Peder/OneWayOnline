@@ -99,12 +99,18 @@ protected:
 	UPROPERTY(ReplicatedUsing = OnRep_HasKey, BlueprintReadOnly, Category = "Player")
 	bool bHasKey;
 
+	UPROPERTY(ReplicatedUsing = OnRep_HasKey, BlueprintReadOnly, Category = "Player")
+	bool bHasWeapon;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UStaticMeshComponent* WeaponMesh;
 
 	// Función de replicación
 	UFUNCTION()
 	void OnRep_HasKey();
+	
+	UFUNCTION()
+	void OnRep_HasWeapon();
 
 	UFUNCTION(Server, Reliable, BlueprintCallable)
 	void ServerDestroyActor(AActor* TargetActor);
@@ -131,6 +137,14 @@ public:
 	// Getter para la llave
 	UFUNCTION(BlueprintPure, Category = "Player")
 	bool GetHasKey() const { return bHasKey; }
+	
+	// Setter para la llave (solo en servidor)
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	void SetHasWeapon(bool bNewHasKey);
+
+	// Getter para la llave
+	UFUNCTION(BlueprintPure, Category = "Player")
+	bool GetHasWeapon() const { return bHasKey; }
 
 	// Replicación
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
@@ -151,7 +165,7 @@ public:
 
 	UFUNCTION()
 	void DoInteract();
-
+	
 	UFUNCTION(BlueprintCallable, Category = "Interaction")
 	void CheckOverlappingItems();
 

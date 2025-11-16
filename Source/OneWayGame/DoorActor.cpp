@@ -2,7 +2,11 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/BoxComponent.h"
 #include "OneWayGameCharacter.h"
+#include "OneWayGameGameMode.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+
+class AOneWayGameGameMode;
 
 ADoorActor::ADoorActor()
 {
@@ -41,6 +45,7 @@ void ADoorActor::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Oth
 		if (PlayerCharacter && !bIsOpen)
 		{
 			InteractWithDoor(PlayerCharacter);
+			ServerWinCondition();
 		}
 	}
 }
@@ -82,6 +87,18 @@ void ADoorActor::OnRep_IsOpen()
 			DoorMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 			InteractionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 		}
+	}
+}
+
+void ADoorActor::ServerWinCondition_Implementation()
+{
+	if (!HasAuthority()) return; // Seguridad
+
+	// Obtener GameMode
+	AOneWayGameGameMode* GM = Cast<AOneWayGameGameMode>(UGameplayStatics::GetGameMode(this));
+	if (GM)
+	{
+		GM->EvaluatePlayers();	
 	}
 }
 
