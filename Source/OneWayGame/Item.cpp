@@ -7,21 +7,28 @@
 AItem::AItem()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	
+	// Replicación
+	bReplicates = true;
+	AActor::SetReplicateMovement(true);
 
-	// Crear un Root (opcional, si no quieres usar el Trigger como root)
+	// Root
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 
-	// Crear Box Trigger
+	// Box Trigger
 	Trigger = CreateDefaultSubobject<UBoxComponent>(TEXT("Trigger"));
 	Trigger->SetupAttachment(RootComponent);
 	Trigger->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	Trigger->SetCollisionResponseToAllChannels(ECR_Overlap); // equivale a OverlapAllDynamic
 	Trigger->SetGenerateOverlapEvents(true);
 
-	// Crear Static Mesh (NO hijo del Trigger)
+	// Static Mesh
 	ItemMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ItemMesh"));
-	ItemMesh->SetupAttachment(RootComponent); // ⬅ Aquí el cambio importante
-	ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision); // para que no interfiera
+	ItemMesh->SetupAttachment(RootComponent); 
+	ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision); 
+
+	ItemMesh->SetIsReplicated(true);
+
 }
 
 // Called when the game starts or when spawned

@@ -26,12 +26,14 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	/** Mesh del ítem editable desde el editor */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
+	UStaticMeshComponent* ItemMesh;
+
 protected:
 	/** Trigger box para detectar al jugador */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
 	UBoxComponent* Trigger;
 
-	/** Mesh del ítem editable desde el editor */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
-	UStaticMeshComponent* ItemMesh;
+
 };

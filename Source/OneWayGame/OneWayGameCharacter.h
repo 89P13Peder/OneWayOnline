@@ -149,6 +149,11 @@ public:
 	// Replicación
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	UFUNCTION(Server, Reliable)
+	void ServerDropWeapon();
+
+	void DropWeapon();
+
 public:
 	// Funciones para mostrar widgets (ejecutadas en todos los clientes)
 	UFUNCTION(Client, Reliable, BlueprintCallable, Category = "UI")

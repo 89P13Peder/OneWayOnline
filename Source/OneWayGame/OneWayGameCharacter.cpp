@@ -34,7 +34,6 @@ AOneWayGameCharacter::AOneWayGameCharacter()
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
 
-	
 	GetCharacterMovement()->JumpZVelocity = 500.f;
 	GetCharacterMovement()->AirControl = 0.35f;
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
@@ -251,6 +250,65 @@ void AOneWayGameCharacter::ServerDestroyActor_Implementation(AActor* TargetActor
 		TargetActor->Destroy();
 		UE_LOG(LogTemp, Warning, TEXT("Actor %s destruido por el servidor"), *TargetActor->GetName());
 	}
+}
+
+void AOneWayGameCharacter::DropWeapon()
+{
+	if (HasAuthority())
+	{
+		ServerDropWeapon();
+	}
+	else
+	{
+		ServerDropWeapon();
+	}
+}
+
+void AOneWayGameCharacter::ServerDropWeapon_Implementation()
+{
+	if (!HasAuthority()) return;
+
+	// 1. Obtener el mesh actual
+	UStaticMesh* CurrentMesh = WeaponMesh->GetStaticMesh();
+	if (!CurrentMesh)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No hay mesh equipado para dropear."));
+		return;
+	}
+
+	// 2. Obtener clase del item
+	UWorld* World = GetWorld();
+	if (!World)
+		return;
+
+	// Suponemos que AItem es tu clase base del item
+	TSubclassOf<AItem> ItemClass = AItem::StaticClass();
+
+	// 3. Calcular posición frente al jugador
+	FVector DropLocation = GetActorLocation() + GetActorForwardVector() * 100.f;
+	FRotator DropRotation = GetActorRotation();
+
+	// 4. Spawnear el item
+	AItem* DroppedItem = World->SpawnActor<AItem>(ItemClass, DropLocation, DropRotation);
+	if (!DroppedItem)
+	{
+		UE_LOG(LogTemp, Error, TEXT("NO se pudo spawnear el item al dropear."));
+		return;
+	}
+
+	// 5. Asignar el mesh al item
+	DroppedItem->ItemMesh->SetStaticMesh(CurrentMesh);
+
+	UE_LOG(LogTemp, Warning, TEXT("Item dropeado con mesh: %s"), *CurrentMesh->GetName());
+
+	// 6. Quitar mesh del jugador
+	WeaponMesh->SetStaticMesh(nullptr);
+
+	// 7. Actualizar replicación
+	bHasWeapon = false;
+	OnRep_HasWeapon();
+
+	UE_LOG(LogTemp, Warning, TEXT("El jugador ya no tiene arma"));
 }
 
 void AOneWayGameCharacter::SetHasKey(bool bNewHasKey)
