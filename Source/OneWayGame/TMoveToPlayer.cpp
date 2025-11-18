@@ -1,25 +1,30 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-#pragma once
 #include "TMoveToPlayer.h"
-
 #include "AIController.h"
-#include "Kismet/GameplayStatics.h"
-#include "GameFramework/Character.h"
+#include "BehaviorTree/BlackboardComponent.h"
+#include "GameFramework/Actor.h"
 
 UTMoveToPlayer::UTMoveToPlayer()
 {
 	NodeName = TEXT("Moverse hacia el jugador");
 }
 
-EBTNodeResult::Type UTMoveToPlayer::ExecuteTask(class UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+EBTNodeResult::Type UTMoveToPlayer::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	AAIController* AIController = Cast<AAIController>(OwnerComp.GetOwner());
-	if (!AIController) return EBTNodeResult::Failed;
+	AAIController* AIController = OwnerComp.GetAIOwner();
+	if (!AIController) 
+		return EBTNodeResult::Failed;
 
-	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(AIController, 0); // ESTO SOLO FUNCIONA PARA EL SERVIDOR.
-	if (!PlayerPawn) return EBTNodeResult::Failed;
+	UBlackboardComponent* Blackboard = OwnerComp.GetBlackboardComponent();
+	if (!Blackboard) 
+		return EBTNodeResult::Failed;
 
-	AIController->MoveToActor(PlayerPawn, 5.0f);
+	
+	AActor* Target = Cast<AActor>(Blackboard->GetValueAsObject("PlayerActor"));
+	if (!Target)
+		return EBTNodeResult::Failed;
+
+	
+	AIController->MoveToActor(Target, 5.0f);
+
 	return EBTNodeResult::Succeeded;
 }

@@ -10,6 +10,10 @@ AAIController_Enemy::AAIController_Enemy()
 {
 	// Inicializa el componente Blackboard
 	BlackboardComp = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComponent"));
+
+	bWantsPlayerState = true;
+
+	
 }
 
 void AAIController_Enemy::BeginPlay()
