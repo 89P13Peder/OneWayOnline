@@ -1,27 +1,51 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "EnemySpawner.h"
 
-// Sets default values
 AEnemySpawner::AEnemySpawner()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 }
 
-// Called when the game starts or when spawned
 void AEnemySpawner::BeginPlay()
 {
 	Super::BeginPlay();
 	
 }
 
-// Called every frame
 void AEnemySpawner::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+AActor* AEnemySpawner::SpawnEnemy()
+{
+	if (!HasAuthority())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SpawnEnemy llamado sin autoridad"));
+		return nullptr;
+	}
+
+	if (!EnemyToSpawn)
+	{
+		UE_LOG(LogTemp, Error, TEXT("EnemySpawner: No hay clase asignada en EnemyToSpawn"));
+		return nullptr;
+	}
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+	FVector SpawnLocation = GetActorLocation();
+	FRotator SpawnRotation = GetActorRotation();
+
+	AActor* SpawnedEnemy = GetWorld()->SpawnActor<AActor>(EnemyToSpawn, SpawnLocation, SpawnRotation, SpawnParams);
+
+	if (SpawnedEnemy)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("EnemySpawner: Enemigo spawneado -> %s"), *SpawnedEnemy->GetName());
+	}
+
+	return SpawnedEnemy;
 }
 
