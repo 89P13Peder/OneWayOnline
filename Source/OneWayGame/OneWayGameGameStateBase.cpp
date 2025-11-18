@@ -6,6 +6,23 @@
 AOneWayGameGameStateBase::AOneWayGameGameStateBase()
 {
     Winner = nullptr;
+
+    TimeLeft = 30;
+}
+
+void AOneWayGameGameStateBase::SetTimeLeft(float NewTimeLeft)
+{
+    if (!HasAuthority())
+    {
+        UE_LOG(LogTemp, Error, TEXT("SetTimeLeft llamado sin autoridad"));
+        return;
+    }
+
+    TimeLeft = NewTimeLeft;
+
+    OnRep_TimeLeft();
+
+    UE_LOG(LogTemp, Warning, TEXT("TimeLeft actualizado en servidor: %f"), TimeLeft);
 }
 
 void AOneWayGameGameStateBase::OnRep_TimeLeft()

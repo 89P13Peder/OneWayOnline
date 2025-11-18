@@ -23,6 +23,9 @@ public:
     UPROPERTY(ReplicatedUsing = OnRep_TimeLeft, BlueprintReadOnly, Category = "Game State")
     float TimeLeft;
 
+    UFUNCTION(BlueprintCallable, Category = "Game State")
+    void SetTimeLeft(float NewTimeLeft);
+
     // Función OnRep — se ejecuta cuando TimeLeft cambia
     UFUNCTION()
     void OnRep_TimeLeft();
