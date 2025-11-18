@@ -40,7 +40,6 @@ void AZombieAI::OnSeePawn(APawn* Pawn)
 {
 	if (!Pawn) return;
 
-	// Intentar castear al personaje del jugador
 	AOneWayGameCharacter* PlayerCharacter = Cast<AOneWayGameCharacter>(Pawn);
 	if (!PlayerCharacter) return;
 	if (PlayerCharacter)
