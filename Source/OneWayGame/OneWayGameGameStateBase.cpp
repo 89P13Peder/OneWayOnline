@@ -8,6 +8,11 @@ AOneWayGameGameStateBase::AOneWayGameGameStateBase()
     Winner = nullptr;
 }
 
+void AOneWayGameGameStateBase::OnRep_TimeLeft()
+{
+    UE_LOG(LogTemp, Warning, TEXT("TimeLeft ha cambiado: %f"), TimeLeft);
+}
+
 void AOneWayGameGameStateBase::OnRep_Winner()
 {
     // Lógica cuando el ganador cambia

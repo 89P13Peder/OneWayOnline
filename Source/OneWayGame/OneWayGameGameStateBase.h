@@ -19,6 +19,13 @@ public:
 
     UPROPERTY(ReplicatedUsing = OnRep_Winner)
     APlayerState* Winner;
+    
+    UPROPERTY(ReplicatedUsing = OnRep_TimeLeft, BlueprintReadOnly, Category = "Game State")
+    float TimeLeft;
+
+    // Función OnRep — se ejecuta cuando TimeLeft cambia
+    UFUNCTION()
+    void OnRep_TimeLeft();
 
     UFUNCTION()
     void OnRep_Winner();
